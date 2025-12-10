@@ -39,7 +39,8 @@ linters-settings:
       type: "module"
       description: "Checks Equals() implementations for KRT-style semantic equality issues"
       settings:
-        deepEqual: true  # Enable reflect.DeepEqual detection (optional)
+        deepEqual: true       # Enable reflect.DeepEqual detection (optional)
+        checkUnexported: true # Check unexported (lowercase) fields (optional)
 ```
 
 ### Programmatic Usage
@@ -52,7 +53,8 @@ a := analyzer.Analyzer
 
 // Or create a custom configured analyzer
 a := analyzer.NewAnalyzer(&analyzer.Config{
-    DeepEqual: true,
+    DeepEqual:       true,
+    CheckUnexported: true,
 })
 ```
 
@@ -60,7 +62,9 @@ a := analyzer.NewAnalyzer(&analyzer.Config{
 
 ### Missing Field Comparisons
 
-The analyzer ensures that all exported fields of a struct are used in its `Equals()` method. If a field is not compared, it could lead to incorrect equality results.
+By default, the analyzer ensures that all exported fields of a struct are used in its `Equals()` method. If a field is not compared, it could lead to incorrect equality results.
+
+When `checkUnexported: true` is enabled, unexported (lowercase) fields are also checked. This is useful for structs with private fields that should still participate in equality comparisons.
 
 ```go
 type MyStruct struct {
@@ -116,6 +120,7 @@ type MyStruct struct {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `deepEqual` | bool | `false` | Enable detection of `reflect.DeepEqual` usage in `Equals()` methods |
+| `checkUnexported` | bool | `false` | Check unexported (lowercase) fields in addition to exported fields |
 
 ## Project Structure
 

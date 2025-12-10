@@ -18,6 +18,10 @@ type Config struct {
 	// DeepEqual toggles the rule that flags usage of reflect.DeepEqual inside Equals methods.
 	// This check is disabled by default for incremental rollout.
 	DeepEqual bool `json:"deepEqual"`
+	// CheckUnexported toggles whether unexported (lowercase) fields are checked.
+	// By default, only exported fields are validated. Enable this to also check
+	// that unexported fields are used in Equals methods.
+	CheckUnexported bool `json:"checkUnexported"`
 }
 
 // Analyzer is the default analyzer instance with all checks disabled.
@@ -100,7 +104,11 @@ func (a *analyzerImpl) Run(pass *analysis.Pass) (any, error) {
 			return
 		}
 		for _, f := range sinfo.fields {
-			if !f.exported || f.ignore || f.todo {
+			if f.ignore || f.todo {
+				continue
+			}
+			// Skip unexported fields unless checkUnexported is enabled
+			if !f.exported && !a.cfg.CheckUnexported {
 				continue
 			}
 			if !usedFields[f.name] {

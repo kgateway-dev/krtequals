@@ -41,3 +41,15 @@ func TestMethodArgs(t *testing.T) {
 	a := NewAnalyzer(&Config{})
 	analysistest.Run(t, testdata, a, "methodargs")
 }
+
+func TestUnexportedCheckEnabled(t *testing.T) {
+	testdata := analysistest.TestData()
+	a := NewAnalyzer(&Config{CheckUnexported: true})
+	analysistest.Run(t, testdata, a, "unexportedon")
+}
+
+func TestUnexportedCheckDisabled(t *testing.T) {
+	testdata := analysistest.TestData()
+	a := NewAnalyzer(&Config{CheckUnexported: false})
+	analysistest.Run(t, testdata, a, "unexportedoff")
+}
