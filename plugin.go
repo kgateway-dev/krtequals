@@ -1,12 +1,15 @@
-// Package krtequals provides a golangci-lint plugin for checking Equals() method implementations.
+// Package krtequals is a golangci-lint plugin for checking Equals() method implementations.
+// It is built as a module to be used with golangci-lint.
+// See https://golangci-lint.run/plugins/module-plugins/ for more information.
 //
-// This file exists to satisfy golangci-lint's module plugin system, which expects
-// a package at the module root. The actual plugin registration happens in the
-// pkg/analyzer package's init() function.
+// This pattern follows the same approach used by kube-api-linter (KAL):
+// https://github.com/kubernetes-sigs/kube-api-linter/blob/main/plugin.go
 package krtequals
 
 import (
-	// Import the analyzer package to trigger plugin registration via init().
-	_ "github.com/kgateway-dev/krtequals/pkg/analyzer"
+	// Importing the analyzer package triggers plugin registration via init().
+	"github.com/kgateway-dev/krtequals/pkg/analyzer"
 )
 
+// New is the entrypoint for the plugin.
+var New = analyzer.New
