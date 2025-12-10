@@ -23,3 +23,21 @@ func TestMarkers(t *testing.T) {
 	a := NewAnalyzer(&Config{})
 	analysistest.Run(t, testdata, a, "markers")
 }
+
+func TestChainedExpressions(t *testing.T) {
+	testdata := analysistest.TestData()
+	a := NewAnalyzer(&Config{})
+	analysistest.Run(t, testdata, a, "chained")
+}
+
+func TestDelegatedEquals(t *testing.T) {
+	testdata := analysistest.TestData()
+	a := NewAnalyzer(&Config{})
+	analysistest.Run(t, testdata, a, "delegated")
+}
+
+func TestMethodArgs(t *testing.T) {
+	testdata := analysistest.TestData()
+	a := NewAnalyzer(&Config{})
+	analysistest.Run(t, testdata, a, "methodargs")
+}
