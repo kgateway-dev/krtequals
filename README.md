@@ -8,13 +8,29 @@ krtequals is designed to catch common bugs in `Equals()` method implementations,
 
 ## Installation
 
+### Standalone CLI
+
 ```bash
-go install github.com/kgateway-dev/krtequals@latest
+go install github.com/kgateway-dev/krtequals/cmd/krtequals@latest
 ```
 
-## Usage with golangci-lint
+### As a Library
 
-krtequals is designed to be used as a [golangci-lint](https://golangci-lint.run/) custom plugin. Add it to your `.golangci.yaml`:
+```bash
+go get github.com/kgateway-dev/krtequals
+```
+
+## Usage
+
+### Standalone
+
+```bash
+krtequals ./...
+```
+
+### With golangci-lint
+
+krtequals can be used as a [golangci-lint](https://golangci-lint.run/) custom plugin. Add it to your `.golangci.yaml`:
 
 ```yaml
 linters-settings:
@@ -24,6 +40,20 @@ linters-settings:
       description: "Checks Equals() implementations for KRT-style semantic equality issues"
       settings:
         deepEqual: true  # Enable reflect.DeepEqual detection (optional)
+```
+
+### Programmatic Usage
+
+```go
+import "github.com/kgateway-dev/krtequals/pkg/analyzer"
+
+// Use the default analyzer
+a := analyzer.Analyzer
+
+// Or create a custom configured analyzer
+a := analyzer.NewAnalyzer(&analyzer.Config{
+    DeepEqual: true,
+})
 ```
 
 ## What It Checks
@@ -87,6 +117,19 @@ type MyStruct struct {
 |--------|------|---------|-------------|
 | `deepEqual` | bool | `false` | Enable detection of `reflect.DeepEqual` usage in `Equals()` methods |
 
+## Project Structure
+
+```
+.
+├── cmd/krtequals/     # Standalone CLI
+│   └── main.go
+├── pkg/analyzer/      # Core analyzer library
+│   ├── analyzer.go    # Main analysis logic
+│   ├── plugin.go      # golangci-lint plugin integration
+│   └── testdata/      # Test fixtures
+└── README.md
+```
+
 ## Development
 
 ### Running Tests
@@ -98,7 +141,7 @@ go test -v ./...
 ### Building
 
 ```bash
-go build ./...
+go build ./cmd/krtequals
 ```
 
 ## License

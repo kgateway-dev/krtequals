@@ -1,4 +1,4 @@
-package krtequals
+package analyzer
 
 import (
 	"github.com/golangci/plugin-module-register/register"
@@ -25,7 +25,7 @@ func New(settings any) (register.LinterPlugin, error) {
 }
 
 func (p *plugin) BuildAnalyzers() ([]*analysis.Analyzer, error) {
-	return []*analysis.Analyzer{newAnalyzer(&p.cfg)}, nil
+	return []*analysis.Analyzer{NewAnalyzer(&p.cfg)}, nil
 }
 
 func (p *plugin) GetLoadMode() string {

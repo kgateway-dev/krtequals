@@ -1,4 +1,6 @@
-package krtequals
+// Package analyzer provides a static analysis tool that checks Equals() method
+// implementations for KRT-style semantic equality issues.
+package analyzer
 
 import (
 	"go/ast"
@@ -11,31 +13,33 @@ import (
 	"golang.org/x/tools/go/ast/inspector"
 )
 
-// TODO(tim): Determine if we need to add a way for devs that define an Equals() method that's
-// unrelated to KRT collection to opt out of the analyzer.
-
-// TODO(tim): [krtEqualsNone, krtEqualsTODO] the right naming for these markers?
-
 // Config controls optional checks performed by the krtequals analyzer.
 type Config struct {
 	// DeepEqual toggles the rule that flags usage of reflect.DeepEqual inside Equals methods.
 	// This check is disabled by default for incremental rollout.
 	DeepEqual bool `json:"deepEqual"`
-	// TODO(time): time.Equals() for direct time.Time comparisons
 }
 
-type analyzer struct {
-	cfg Config
-}
+// Analyzer is the default analyzer instance with all checks disabled.
+// Use NewAnalyzer for custom configuration.
+var Analyzer = NewAnalyzer(&Config{})
 
-func newAnalyzer(cfg *Config) *analysis.Analyzer {
-	a := &analyzer{cfg: *cfg}
+// NewAnalyzer creates a new krtequals analyzer with the given configuration.
+func NewAnalyzer(cfg *Config) *analysis.Analyzer {
+	if cfg == nil {
+		cfg = &Config{}
+	}
+	a := &analyzerImpl{cfg: *cfg}
 	return &analysis.Analyzer{
 		Name:     "krtequals",
 		Doc:      "Checks Equals() implementations for KRT-style semantic equality issues",
 		Run:      a.Run,
 		Requires: []*analysis.Analyzer{inspect.Analyzer},
 	}
+}
+
+type analyzerImpl struct {
+	cfg Config
 }
 
 type structInfo struct {
@@ -51,7 +55,7 @@ type fieldInfo struct {
 	todo     bool
 }
 
-func (a *analyzer) Run(pass *analysis.Pass) (any, error) {
+func (a *analyzerImpl) Run(pass *analysis.Pass) (any, error) {
 	ins := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
 	structs := collectStructs(ins)
