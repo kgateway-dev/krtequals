@@ -2,8 +2,9 @@
 package main
 
 import (
-	"github.com/kgateway-dev/krtequals/pkg/analyzer"
 	"golang.org/x/tools/go/analysis/singlechecker"
+
+	"github.com/kgateway-dev/krtequals/pkg/analyzer"
 )
 
 func main() {
