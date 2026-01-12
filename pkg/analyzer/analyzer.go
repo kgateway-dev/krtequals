@@ -223,10 +223,8 @@ func checkStructComparisons(pass *analysis.Pass, fd *ast.FuncDecl, recvIdent str
 			// Try unwrapping pointer
 			if ptrType, isPtrType := leftType.(*types.Pointer); isPtrType {
 				namedType, ok = ptrType.Elem().(*types.Named)
-				if !ok {
-					return true
-				}
-			} else {
+			}
+			if !ok {
 				return true
 			}
 		}
@@ -253,8 +251,12 @@ func checkStructComparisons(pass *analysis.Pass, fd *ast.FuncDecl, recvIdent str
 		}
 
 		if hasIgnoredFields {
+			opStr := "=="
+			if binExpr.Op == token.NEQ {
+				opStr = "!="
+			}
 			pass.Reportf(binExpr.Pos(), "field %q of struct type %q is compared using %s which ignores +noKrtEquals markers; use .Equals() method instead",
-				leftSel.Sel.Name, typeName, binExpr.Op)
+				leftSel.Sel.Name, typeName, opStr)
 		}
 
 		return true
