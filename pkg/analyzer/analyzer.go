@@ -99,6 +99,9 @@ func (a *analyzerImpl) Run(pass *analysis.Pass) (any, error) {
 
 		usedFields := collectUsedFieldsInEquals(fd.Body, recvIdent, paramNames)
 
+		// Check for struct comparisons that may bypass +noKrtEquals markers
+		checkStructComparisons(pass, fd, recvIdent, paramNames, structs)
+
 		sinfo, ok := structs[recvTypeName]
 		if !ok {
 			return
@@ -167,6 +170,95 @@ func collectStructs(ins *inspector.Inspector) map[string]*structInfo {
 	})
 
 	return structs
+}
+
+func checkStructComparisons(pass *analysis.Pass, fd *ast.FuncDecl, recvIdent string, paramIdents []string, structs map[string]*structInfo) {
+	if pass.TypesInfo == nil {
+		return
+	}
+
+	paramSet := make(map[string]struct{}, len(paramIdents))
+	for _, p := range paramIdents {
+		paramSet[p] = struct{}{}
+	}
+
+	ast.Inspect(fd.Body, func(n ast.Node) bool {
+		binExpr, ok := n.(*ast.BinaryExpr)
+		if !ok {
+			return true
+		}
+
+		// Check for == or != comparisons
+		if binExpr.Op != token.EQL && binExpr.Op != token.NEQ {
+			return true
+		}
+
+		// Check if left side is a field access from receiver or param
+		leftSel, leftOk := binExpr.X.(*ast.SelectorExpr)
+		if !leftOk {
+			return true
+		}
+
+		leftIdent, leftIdentOk := leftSel.X.(*ast.Ident)
+		if !leftIdentOk {
+			return true
+		}
+
+		// Check if it's from receiver or parameter
+		isRecv := leftIdent.Name == recvIdent
+		_, isParam := paramSet[leftIdent.Name]
+		if !isRecv && !isParam {
+			return true
+		}
+
+		// Get the type of the field being compared
+		leftType := pass.TypesInfo.TypeOf(leftSel)
+		if leftType == nil {
+			return true
+		}
+
+		// Check if it's a named struct type
+		namedType, ok := leftType.(*types.Named)
+		if !ok {
+			// Try unwrapping pointer
+			if ptrType, isPtrType := leftType.(*types.Pointer); isPtrType {
+				namedType, ok = ptrType.Elem().(*types.Named)
+				if !ok {
+					return true
+				}
+			} else {
+				return true
+			}
+		}
+
+		_, ok = namedType.Underlying().(*types.Struct)
+		if !ok {
+			return true
+		}
+
+		// Check if the struct type has any ignored fields
+		typeName := namedType.Obj().Name()
+		structInfo, ok := structs[typeName]
+		if !ok {
+			return true
+		}
+
+		// Check if any fields have +noKrtEquals markers
+		hasIgnoredFields := false
+		for _, field := range structInfo.fields {
+			if field.ignore || field.todo {
+				hasIgnoredFields = true
+				break
+			}
+		}
+
+		if hasIgnoredFields {
+			pass.Reportf(binExpr.Pos(), "field %q of struct type %q is compared using %s which ignores +noKrtEquals markers in nested fields; use .Equals() method instead",
+				leftSel.Sel.Name, typeName, binExpr.Op)
+		}
+
+		return true
+	})
 }
 
 func checkReflectDeepEqual(pass *analysis.Pass, fd *ast.FuncDecl) {

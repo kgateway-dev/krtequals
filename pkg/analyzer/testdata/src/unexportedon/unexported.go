@@ -52,4 +52,3 @@ func (a *AllFieldsUsed) Equals(other *AllFieldsUsed) bool {
 	}
 	return a.name == other.name && a.value == other.value && a.extra == other.extra
 }
-

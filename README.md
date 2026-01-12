@@ -89,6 +89,37 @@ func (m MyStruct) Equals(other MyStruct) bool {
 }
 ```
 
+### Struct Field Comparisons with `==`
+
+The analyzer detects when struct-typed fields are compared using `==` instead of delegating to their `Equals()` method. This is important because using `==` for struct comparison ignores any `+noKrtEquals` markers on the nested struct's fields, potentially comparing fields that should be excluded.
+
+```go
+type InnerType struct {
+    Value int
+    // +noKrtEquals reason: internal cache
+    Cache map[string]string
+}
+
+type OuterType struct {
+    Name  string
+    Inner InnerType
+}
+
+// Bad: Using == compares ALL fields of InnerType, including Cache
+func (o OuterType) Equals(other OuterType) bool {
+    return o.Name == other.Name && o.Inner == other.Inner  // Flagged!
+}
+
+// Good: Delegate to InnerType.Equals() which respects +noKrtEquals markers
+func (i InnerType) Equals(other InnerType) bool {
+    return i.Value == other.Value  // Cache is intentionally not compared
+}
+
+func (o OuterType) Equals(other OuterType) bool {
+    return o.Name == other.Name && o.Inner.Equals(other.Inner)
+}
+```
+
 ## Markers
 
 ### `+noKrtEquals`

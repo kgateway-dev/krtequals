@@ -65,3 +65,9 @@ func TestNestedFieldsWithUnexported(t *testing.T) {
 	a := NewAnalyzer(&Config{CheckUnexported: true})
 	analysistest.Run(t, testdata, a, "nestedunexported")
 }
+
+func TestStructComparisons(t *testing.T) {
+	testdata := analysistest.TestData()
+	a := NewAnalyzer(&Config{})
+	analysistest.Run(t, testdata, a, "problem")
+}

@@ -50,4 +50,3 @@ func (l ListenerPolicyIR) Equals(other ListenerPolicyIR) bool {
 	// NoOrigin is marked with +noKrtEquals so it shouldn't be required
 	return true
 }
-
