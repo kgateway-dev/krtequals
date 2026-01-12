@@ -253,7 +253,7 @@ func checkStructComparisons(pass *analysis.Pass, fd *ast.FuncDecl, recvIdent str
 		}
 
 		if hasIgnoredFields {
-			pass.Reportf(binExpr.Pos(), "field %q of struct type %q is compared using %s which ignores +noKrtEquals markers in nested fields; use .Equals() method instead",
+			pass.Reportf(binExpr.Pos(), "field %q of struct type %q is compared using %s which ignores +noKrtEquals markers; use .Equals() method instead",
 				leftSel.Sel.Name, typeName, binExpr.Op)
 		}
 

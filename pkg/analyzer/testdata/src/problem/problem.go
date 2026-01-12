@@ -19,7 +19,7 @@ type OuterType struct {
 // This is the problem: the linter sees that Inner is used,
 // but doesn't check that InnerType.Ignored has a +noKrtEquals marker
 func (o OuterType) Equals(other OuterType) bool {
-	return o.Name == other.Name && o.Inner == other.Inner // want "field \"Inner\" of struct type \"InnerType\" is compared using == which ignores .noKrtEquals markers"
+	return o.Name == other.Name && o.Inner == other.Inner // want "field \"Inner\" of struct type \"InnerType\" is compared using == which ignores \\+noKrtEquals markers"
 }
 
 // ListenerPolicyIR mimics the exact structure from the GitHub issue
@@ -45,7 +45,7 @@ type HttpListenerPolicyIr struct {
 // This Equals incorrectly uses == for defaultPolicy comparison
 // which bypasses the +noKrtEquals marker on listenerPolicy.http
 func (l ListenerPolicyIR) Equals(other ListenerPolicyIR) bool {
-	return l.ct == other.ct && l.defaultPolicy == other.defaultPolicy // want "field \"defaultPolicy\" of struct type \"listenerPolicy\" is compared using == which ignores .noKrtEquals markers"
+	return l.ct == other.ct && l.defaultPolicy == other.defaultPolicy // want "field \"defaultPolicy\" of struct type \"listenerPolicy\" is compared using == which ignores \\+noKrtEquals markers"
 }
 
 // CorrectComparison shows the correct way to compare struct fields
