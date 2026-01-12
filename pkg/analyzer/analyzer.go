@@ -172,6 +172,10 @@ func collectStructs(ins *inspector.Inspector) map[string]*structInfo {
 	return structs
 }
 
+// checkStructComparisons detects when struct-typed fields are compared using == or !=
+// instead of delegating to an Equals() method. This is problematic because Go's default
+// struct comparison compares ALL fields, potentially comparing fields that have
+// +noKrtEquals or +krtEqualsTodo markers that should be excluded.
 func checkStructComparisons(pass *analysis.Pass, fd *ast.FuncDecl, recvIdent string, paramIdents []string, structs map[string]*structInfo) {
 	if pass.TypesInfo == nil {
 		return
@@ -255,7 +259,7 @@ func checkStructComparisons(pass *analysis.Pass, fd *ast.FuncDecl, recvIdent str
 			if binExpr.Op == token.NEQ {
 				opStr = "!="
 			}
-			pass.Reportf(binExpr.Pos(), "field %q of struct type %q is compared using %s which ignores +noKrtEquals markers; use .Equals() method instead",
+			pass.Reportf(binExpr.Pos(), "field %q of struct type %q is compared using %s which ignores +noKrtEquals/+krtEqualsTodo markers; use .Equals() method instead",
 				leftSel.Sel.Name, typeName, opStr)
 		}
 
