@@ -53,3 +53,15 @@ func TestUnexportedCheckDisabled(t *testing.T) {
 	a := NewAnalyzer(&Config{CheckUnexported: false})
 	analysistest.Run(t, testdata, a, "unexportedoff")
 }
+
+func TestNestedFields(t *testing.T) {
+	testdata := analysistest.TestData()
+	a := NewAnalyzer(&Config{})
+	analysistest.Run(t, testdata, a, "nested")
+}
+
+func TestNestedFieldsWithUnexported(t *testing.T) {
+	testdata := analysistest.TestData()
+	a := NewAnalyzer(&Config{CheckUnexported: true})
+	analysistest.Run(t, testdata, a, "nestedunexported")
+}
